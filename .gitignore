@@ -1,0 +1,13 @@
+# Terraform state
+*.tfstate
+*.tfstate.backup
+.terraform/
+terraform.tfvars
+
+# Go binaries (if you build them locally)
+order-api/order-api
+order-worker/order-worker
+
+# OS files
+.DS_Store
+Thumbs.db
