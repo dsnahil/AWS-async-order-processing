@@ -34,16 +34,32 @@ type Order struct {
 var snsClient *sns.Client
 var snsTopicArn string
 
+// --- !! NEW BOTTLENECK SIMULATOR !! ---
+// This buffered channel has a capacity of 1.
+// It acts as a semaphore, ensuring only one goroutine
+// can "hold the token" and process a payment at a time.
+var paymentProcessorThrottle chan struct{}
+
 // Simulates the 3-second payment verification
 func verifyPayment() {
+	// --- THIS IS THE NEW LOGIC ---
+	log.Println("SYNC: Requesting payment processor lock...")
+	// This line BLOCKS until there is space in the channel.
+	paymentProcessorThrottle <- struct{}{}
+	log.Println("SYNC: Lock acquired. Processing payment for 3s...")
+
 	time.Sleep(3 * time.Second)
+
+	// This line "returns" the token to the channel,
+	// allowing the *next* waiting request to proceed.
+	<-paymentProcessorThrottle
+	log.Println("SYNC: Payment complete. Lock released.")
+	// --- END NEW LOGIC ---
 }
 
 // --- Handlers ---
 
 // POST /orders/sync
-// Implement synchronous order processing:
-// POST /orders/sync → Verify Payment (3s delay) → Return 200 OK
 func handleSyncOrder(c *gin.Context) {
 	var order Order
 	if err := c.BindJSON(&order); err != nil {
@@ -51,24 +67,19 @@ func handleSyncOrder(c *gin.Context) {
 		return
 	}
 
-	// Set order details
 	order.OrderID = uuid.New().String()
 	order.Status = "pending"
 	order.CreatedAt = time.Now()
-
 	log.Println("SYNC: Received order", order.OrderID)
 
 	// Simulate the 3-second bottleneck
-	log.Println("SYNC: Verifying payment for", order.OrderID, "...")
 	verifyPayment()
-	log.Println("SYNC: Payment verified for", order.OrderID)
 
 	order.Status = "completed"
 	c.JSON(http.StatusOK, order)
 }
 
 // POST /orders/async
-// POST /orders/async → Publish to SNS → Return 202 Accepted
 func handleAsyncOrder(c *gin.Context) {
 	var order Order
 	if err := c.BindJSON(&order); err != nil {
@@ -76,21 +87,17 @@ func handleAsyncOrder(c *gin.Context) {
 		return
 	}
 
-	// Set order details
 	order.OrderID = uuid.New().String()
-	order.Status = "pending" // The worker will update this
+	order.Status = "pending"
 	order.CreatedAt = time.Now()
-
 	log.Println("ASYNC: Received order", order.OrderID)
 
-	// Convert order to JSON
 	messageBody, err := json.Marshal(order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to serialize order"})
 		return
 	}
 
-	// Publish to SNS
 	_, err = snsClient.Publish(context.TODO(), &sns.PublishInput{
 		Message:  aws.String(string(messageBody)),
 		TopicArn: aws.String(snsTopicArn),
@@ -103,8 +110,6 @@ func handleAsyncOrder(c *gin.Context) {
 	}
 
 	log.Println("ASYNC: Queued order", order.OrderID)
-
-	// Return 202 Accepted
 	c.JSON(http.StatusAccepted, gin.H{
 		"message":  "Order accepted for processing",
 		"order_id": order.OrderID,
@@ -112,20 +117,21 @@ func handleAsyncOrder(c *gin.Context) {
 }
 
 // GET /health
-// Health check: /health endpoint returning 200
 func handleHealth(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
 func main() {
-	// --- Load AWS Config ---
+	// --- !! INITIALIZE THE THROTTLE !! ---
+	// Create the channel with a buffer size of 1
+	paymentProcessorThrottle = make(chan struct{}, 1)
+
 	sdkConfig, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatal("Cannot load AWS config: ", err)
 	}
 	snsClient = sns.NewFromConfig(sdkConfig)
 
-	// Get SNS topic ARN from environment variable (set by Terraform)
 	snsTopicArn = os.Getenv("SNS_TOPIC_ARN")
 	if snsTopicArn == "" {
 		log.Fatal("SNS_TOPIC_ARN environment variable is not set")
@@ -133,15 +139,12 @@ func main() {
 
 	log.Println("Successfully connected to SNS, topic ARN:", snsTopicArn)
 
-	// --- Setup Webserver ---
-	// Seed random generator
 	rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	r := gin.Default()
 	r.POST("/orders/sync", handleSyncOrder)
 	r.POST("/orders/async", handleAsyncOrder)
 	r.GET("/health", handleHealth)
 
-	log.Println("Starting API server on :8081")
-	r.Run(":8081") // Listen on port 8081
+	log.Println("Starting API server on :8081 with REAL bottleneck")
+	r.Run(":8081")
 }

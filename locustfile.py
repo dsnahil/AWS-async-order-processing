@@ -1,5 +1,5 @@
 import random
-from locust import HttpUser, task, between  # <--- THIS IS THE FIX
+from locust import HttpUser, task, between
 
 class OrderUser(HttpUser):
     # This is the DNS name of your load balancer.
@@ -19,13 +19,14 @@ class OrderUser(HttpUser):
             ]
         }
 
-    # This is the task for Phase 1
-    @task(10) # 10 means this task is 10x more likely to be run
+    # This is the task for Phase 1 - NOW DISABLED
+    @task(0) # Set weight to 0 to disable this task
     def post_sync_order(self):
-        self.client.post("/orders/sync", json=self.get_order_payload())
-
-    # We'll use this task in Phase 3
-    @task(1) # 1 means this task is less likely (we'll change this later)
-    def post_async_order(self):
-        # For now, we'll just ignore this one
+        # We are skipping this now
         pass
+
+    # This is the task for Phase 3 - NOW ENABLED
+    @task(10) # Set weight to 10 to make this the primary task
+    def post_async_order(self):
+        # This is the new active task, hitting the async endpoint
+        self.client.post("/orders/async", json=self.get_order_payload())
