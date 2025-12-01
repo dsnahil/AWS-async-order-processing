@@ -1,27 +1,5 @@
 # Architecture Diagrams
 
-This directory contains PlantUML and Mermaid diagram source files.
-
-## Viewing the Diagrams
-
-### Option 1: Online Viewers
-- **PlantUML (.puml files):** https://www.plantuml.com/plantuml/uml/
-- **Mermaid (.mmd files):** https://mermaid.live/
-
-### Option 2: VS Code Extensions
-- Install "PlantUML" extension by jebbs
-- Install "Markdown Preview Mermaid Support" extension
-
-### Option 3: Generate PNG Files
-```bash
-# Install PlantUML (requires Java)
-brew install plantuml  # macOS
-apt-get install plantuml  # Ubuntu
-
-# Generate images
-plantuml *.puml
-```
-
 ## Diagram Descriptions
 
 ### system_architecture.puml
