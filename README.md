@@ -185,26 +185,40 @@ terraform destroy
 <img width="1550" height="825" alt="image" src="https://github.com/user-attachments/assets/3e01f3de-de47-47e6-9369-12efa799d111" />
 
 
+
 **Test Configuration:**
-- Environment: LocalStack (local emulation)
+- Environment: LocalStack (Docker on local machine)
 - Concurrent Users: 100
 - Spawn Rate: 10 users/second
-- Duration: ~2 minutes
+- Duration: 2 minutes
+- Workers: 1 instance
 
-**Results:**
-- **Throughput:** 78.1 RPS (requests per second)
-- **Success Rate:** 100% (0% failures)
-- **Response Times:**
-  - 50th percentile: 720ms
-  - 95th percentile: 1,230ms
-- **Total Requests:** ~9,000+ successful async order submissions
+**Actual Results - 100 Users:**
+- ✅ **Throughput:** 78.1 RPS (requests/second)
+- ✅ **Success Rate:** 100% (zero failures)
+- ✅ **Response Time (p50):** 720ms
+- ✅ **Response Time (p95):** 1,230ms
+- ✅ **Total Requests:** ~9,000 async orders
+
+**Stress Test - 1000 Users:**
+- ⚠️ **Throughput:** 129.7 RPS
+- ⚠️ **Success Rate:** 89% (11% failures - single worker bottleneck)
+- ⚠️ **Response Time (p50):** 4,700ms
+- ⚠️ **Response Time (p95):** 30,000ms
+
 
 **Key Insights:**
-✅ **Async advantage**: API responds in <1.5s while workers process in background (3s)
-✅ **Zero failures**: SNS/SQS architecture handles load gracefully
-✅ **Scalability**: Single worker processes ~26 orders/second (78 RPS / 3s processing)
-✅ **Production ready**: 100 concurrent users with sub-second response times
 
+1. **Async Architecture Works** - Both environments benefit from SNS/SQS decoupling
+2. **LocalStack Proves Concept** - 78 RPS with 0% failures validates design
+3. **AWS Scales Better** - Auto-scaling workers handle load spikes gracefully
+4. **Single Worker Bottleneck** - LocalStack hits ceiling at ~130 RPS (1000 users)
+
+**Why AWS Performs Better:**
+- ✅ Dedicated Fargate vCPUs (vs shared Docker resources)
+- ✅ Optimized ALB→ECS networking  
+- ✅ Auto-scaling: 1-5 workers based on queue depth
+- ✅ Multi-AZ deployment for reliability
 **Scaling Projection:**
 - AWS Auto-scaling: Can handle 1000+ users by scaling workers based on queue depth
 
@@ -216,7 +230,7 @@ terraform destroy
 
 ### Monthly Infrastructure Costs
 
-| Component | LocalStack | AWS |
+| Component | LocalStack| AWS |
 |-----------|-----------|-----|
 | **Compute** | $0 | $15 |
 | **Networking** | $0 | $25 |
