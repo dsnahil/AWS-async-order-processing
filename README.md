@@ -11,19 +11,6 @@
 
 ---
 
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Quick Start](#quick-start)
-- [Deployment Options](#deployment-options)
-- [Performance Analysis](#performance-analysis)
-- [Cost Comparison](#cost-comparison)
-- [Key Findings](#key-findings)
-- [Documentation](#documentation)
-
----
-
 ## 🎯 Overview
 
 This project demonstrates a **production-grade asynchronous order processing system** built with Go, deployed in two different environments to analyze trade-offs:
