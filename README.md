@@ -1,17 +1,7 @@
 # Asynchronous Order Processing System
 ## LocalStack vs AWS Deployment Comparison
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Go](https://img.shields.io/badge/Go-1.21-00ADD8?logo=go)](https://golang.org/)
-[![AWS](https://img.shields.io/badge/AWS-ECS%20%7C%20SNS%20%7C%20SQS-FF9900?logo=amazon-aws)](https://aws.amazon.com/)
-[![LocalStack](https://img.shields.io/badge/LocalStack-Enabled-00D1B2)](https://localstack.cloud/)
-
-> **Final Mastery Project** - Distributed Systems Course  
-> Comprehensive deployment analysis comparing local AWS emulation (LocalStack) vs cloud production deployment (AWS)
-
----
-
-## 🎯 Overview
+## Overview
 
 This project demonstrates a **production-grade asynchronous order processing system** built with Go, deployed in two different environments to analyze trade-offs:
 
