@@ -41,14 +41,3 @@ Mermaid chart comparing costs between LocalStack and AWS.
 <img width="782" height="658" alt="image" src="https://github.com/user-attachments/assets/1fd4cd1f-5700-4a6c-aa8e-05ccfaafefdb" />
 
 
-
-## Embedding in Markdown
-
-For GitHub README:
-```markdown
-![Architecture](./diagrams/system_architecture.png)
-```
-
-For documentation:
-- Export as PNG/SVG from online viewers
-- Commit generated images to repository
