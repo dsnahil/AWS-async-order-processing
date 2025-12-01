@@ -1,0 +1,16 @@
+# Python dependencies for metrics and load testing
+
+# AWS SDK
+boto3==1.34.0
+
+# HTTP requests
+requests==2.31.0
+
+# Load testing
+locust==2.20.0
+
+# Data visualization
+matplotlib==3.8.2
+
+# Utilities
+python-dateutil==2.8.2

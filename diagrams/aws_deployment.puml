@@ -1,0 +1,52 @@
+@startuml aws_deployment
+!define RECTANGLE class
+
+title AWS Production Deployment Architecture
+
+package "VPC (10.0.0.0/16)" {
+    
+    package "Public Subnets" {
+        rectangle "Application\nLoad Balancer" as alb
+        rectangle "NAT Gateway" as nat
+        rectangle "Internet\nGateway" as igw
+    }
+    
+    package "Private Subnets" {
+        rectangle "ECS Fargate" as ecs {
+            component "Order API\nTask" as api_task
+            component "Order Worker\nTask" as worker_task
+        }
+    }
+    
+    alb -down-> api_task : Forward :8081
+    api_task -up-> nat : Egress
+    worker_task -up-> nat : Egress
+    nat -up-> igw : Internet
+}
+
+cloud "AWS Managed Services" {
+    component "SNS Topic" as sns
+    component "SQS Queue" as sqs
+    component "CloudWatch" as cw
+    component "ECR" as ecr
+}
+
+actor "Internet\nClients" as clients
+clients -down-> igw : HTTP :80
+igw -down-> alb
+
+api_task -right-> sns : Publish
+sns -down-> sqs : Subscribe
+worker_task -left-> sqs : Poll
+api_task -down-> cw : Logs
+worker_task -down-> cw : Logs
+ecs -up-> ecr : Pull images
+
+note right of ecs
+  • Auto-scaling enabled
+  • Multi-AZ deployment
+  • 0.25 vCPU / 512 MB
+  • Fargate serverless
+end note
+
+@enduml

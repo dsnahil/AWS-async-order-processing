@@ -1,0 +1,14 @@
+graph LR
+    A[Cost Analysis] --> B[LocalStack: $0/month]
+    A --> C[AWS: $41/month]
+    
+    B --> B1[Zero infrastructure]
+    B --> B2[Local compute only]
+    B --> B3[No data transfer]
+    
+    C --> C1[ECS: $15]
+    C --> C2[ALB + NAT: $25]
+    C --> C3[Logs: $1]
+    
+    style B fill:#2ecc71
+    style C fill:#e74c3c

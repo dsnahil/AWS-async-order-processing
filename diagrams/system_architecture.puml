@@ -1,0 +1,34 @@
+@startuml system_architecture
+!define RECTANGLE class
+
+title Asynchronous Order Processing System Architecture
+
+actor Client as client
+rectangle "Order API\n(Go/Gin)" as api
+rectangle "SNS Topic\n(order-events)" as sns
+rectangle "SQS Queue\n(order-queue)" as sqs
+rectangle "Order Worker\n(Go)" as worker
+database "CloudWatch\nLogs" as logs
+
+client -down-> api : POST /orders/async
+api -down-> sns : Publish order event
+sns -down-> sqs : Fan-out subscription
+worker -up-> sqs : Long-poll messages
+api -right-> logs : Application logs
+worker -right-> logs : Processing logs
+
+note right of api
+  • REST API
+  • Gin framework
+  • SNS publisher
+  • 3s payment bottleneck
+end note
+
+note right of worker
+  • SQS consumer
+  • Configurable workers
+  • Message processing
+  • Auto-deletion
+end note
+
+@enduml

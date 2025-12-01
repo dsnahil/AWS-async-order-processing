@@ -1,0 +1,38 @@
+@startuml localstack_deployment
+!define RECTANGLE class
+
+title LocalStack Deployment Architecture
+
+package "Docker Compose Network" {
+    rectangle "LocalStack\nContainer" as ls {
+        component "SNS" as sns
+        component "SQS" as sqs
+        component "CloudWatch" as cw
+    }
+    
+    rectangle "Order API\nContainer" as api {
+        component "Gin Server\n:8081" as gin
+    }
+    
+    rectangle "Order Worker\nContainer" as worker {
+        component "SQS Consumer\n(1 instance)" as consumer
+    }
+    
+    gin -down-> sns : Publish
+    sns -down-> sqs : Subscribe
+    consumer -up-> sqs : Poll
+    gin -right-> cw : Metrics
+    consumer -right-> cw : Logs
+}
+
+actor "External\nClient" as client
+client -down-> gin : :8080 (mapped)
+
+note bottom of ls
+  • Port 4566 (LocalStack gateway)
+  • Zero cloud costs
+  • Offline capable
+  • Fast iteration
+end note
+
+@enduml

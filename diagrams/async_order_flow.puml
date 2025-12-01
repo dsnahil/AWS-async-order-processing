@@ -1,0 +1,53 @@
+@startuml async_order_flow
+!define RECTANGLE class
+
+title Asynchronous Order Processing Flow
+
+actor Client
+participant "Order API" as API
+participant "SNS Topic" as SNS
+participant "SQS Queue" as SQS
+participant "Order Worker" as Worker
+database "CloudWatch" as CW
+
+Client -> API : POST /orders/async\n{order_data}
+activate API
+
+API -> API : Generate order_id
+API -> API : Set status = "pending"
+
+API -> SNS : Publish order event
+activate SNS
+SNS --> API : Message ID
+deactivate SNS
+
+API --> Client : 202 Accepted\n{order_id, status}
+deactivate API
+
+SNS -> SQS : Fan-out message
+activate SQS
+
+Worker -> SQS : Long-poll (20s)
+SQS --> Worker : Order message
+activate Worker
+
+Worker -> Worker : Process payment\n(3 seconds)
+Worker -> Worker : Update status = "completed"
+
+Worker -> SQS : Delete message
+deactivate SQS
+
+Worker -> CW : Log completion
+deactivate Worker
+
+note over API
+  Fast response to client
+  (~50ms average)
+end note
+
+note over Worker
+  Async processing
+  (~3 seconds)
+end note
+
+@enduml
