@@ -78,16 +78,17 @@ cd AWS-async-order-processing
 chmod +x scripts/*.sh
 ./scripts/deploy_localstack.sh
 
-
-<img width="864" height="398" alt="image" src="https://github.com/user-attachments/assets/1117130e-67ff-497f-a869-43714562903d" />
-
-
 # Verify deployment
 curl http://localhost:8082/health
 
 # Run load tests
 ./scripts/run_tests.sh localstack
 ```
+
+
+<img width="864" height="398" alt="image" src="https://github.com/user-attachments/assets/1117130e-67ff-497f-a869-43714562903d" />
+
+
 
 #### Option B: AWS (Production)
 
