@@ -441,5 +441,3 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [Go AWS SDK](https://aws.github.io/aws-sdk-go-v2/)
 
 ---
-
-**⭐ Star this repo if you found it useful for your interview preparation!**
