@@ -200,6 +200,9 @@ terraform destroy
 
 ### Load Testing Results
 
+<img width="1550" height="825" alt="image" src="https://github.com/user-attachments/assets/3e01f3de-de47-47e6-9369-12efa799d111" />
+
+
 | Metric | LocalStack | AWS | Difference |
 |--------|-----------|-----|------------|
 | **Throughput** | 45 req/s | 42 req/s | -3 req/s |
