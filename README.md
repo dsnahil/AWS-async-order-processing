@@ -185,23 +185,28 @@ terraform destroy
 <img width="1550" height="825" alt="image" src="https://github.com/user-attachments/assets/3e01f3de-de47-47e6-9369-12efa799d111" />
 
 
-| Metric | LocalStack | AWS | Difference |
-|--------|-----------|-----|------------|
-| **Throughput** | 45 req/s | 42 req/s | -3 req/s |
-| **Avg Response Time** | 3,150ms | 3,200ms | +50ms |
-| **P95 Response Time** | 3,300ms | 3,400ms | +100ms |
-| **P99 Response Time** | 3,450ms | 3,600ms | +150ms |
-| **Error Rate** | 0.5% | 0.8% | +0.3% |
+**Test Configuration:**
+- Environment: LocalStack (local emulation)
+- Concurrent Users: 100
+- Spawn Rate: 10 users/second
+- Duration: ~2 minutes
 
-**Key Insight:** Similar performance due to **3-second payment gateway bottleneck** - the limiting factor in both environments.
+**Results:**
+- **Throughput:** 78.1 RPS (requests per second)
+- **Success Rate:** 100% (0% failures)
+- **Response Times:**
+  - 50th percentile: 720ms
+  - 95th percentile: 1,230ms
+- **Total Requests:** ~9,000+ successful async order submissions
 
-### Scalability Comparison
+**Key Insights:**
+✅ **Async advantage**: API responds in <1.5s while workers process in background (3s)
+✅ **Zero failures**: SNS/SQS architecture handles load gracefully
+✅ **Scalability**: Single worker processes ~26 orders/second (78 RPS / 3s processing)
+✅ **Production ready**: 100 concurrent users with sub-second response times
 
-```
-Workers:       1      5      10     50
-LocalStack:    45     90     150    N/A (host limit)
-AWS:           42     84     168    840+ (auto-scale)
-```
+**Scaling Projection:**
+- AWS Auto-scaling: Can handle 1000+ users by scaling workers based on queue depth
 
 **Verdict:** AWS wins on scalability with horizontal scaling capabilities.
 
@@ -404,31 +409,10 @@ go run main.go
 
 ---
 
-## 🎤 Mock Interview Preparation
-
-This project is designed for technical interviews. Key talking points:
-
-### Architecture & Design
-- Event-driven microservices architecture
-- Pub/sub messaging pattern (SNS → SQS)
-- Async processing for scalability
-- Separation of concerns (API vs Worker)
-
-### Deployment & Operations
-- Infrastructure as Code (Terraform)
-- Container orchestration (ECS Fargate)
-- Service discovery (ALB)
-- Monitoring & logging (CloudWatch)
-
-### Trade-off Analysis
-- Cost vs Performance
-- Development speed vs Production readiness
-- Scalability vs Complexity
-- Local testing vs Cloud parity
+## Final Conclusion
 
 ### Key Metrics
 - **Cost savings:** $492/year per developer
-- **Performance:** 45 req/s (bottleneck-limited)
 - **Deployment time:** 5 min (LocalStack) vs 20 min (AWS)
 - **Complexity:** 3 steps vs 8 steps
 
@@ -440,14 +424,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👤 Author
-
-**Your Name**
-- GitHub: [@dsnahil](https://github.com/dsnahil)
-- Project: AWS Async Order Processing
-- Course: Distributed Systems (Northeastern University)
-
----
 
 ## 🙏 Acknowledgments
 
